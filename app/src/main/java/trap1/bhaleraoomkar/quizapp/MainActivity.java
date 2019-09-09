@@ -17,6 +17,7 @@ public class MainActivity extends AppCompatActivity {
     EditText entry1;
     TextView text1;
     TextView scorebox;
+    TextView timeLeft;
 
     String[] questions = new String[]{"What is 1 + 1?",
             "What state is Chicago in?",
@@ -30,9 +31,11 @@ public class MainActivity extends AppCompatActivity {
     int currIdx = 0;
     String currAns = "";
     int score = 0;
+    Timer timer = new Timer();
+    int duration = 0;
 
-    /*SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-    SharedPreferences.Editor editor = sharedPref.edit();*/
+    SharedPreferences sharedPref;
+    SharedPreferences.Editor editor;
 
     View.OnClickListener reset = new View.OnClickListener() {
         @Override
@@ -59,7 +62,39 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             playerName = entry1.getText().toString();
             entry1.setText("");
+            timer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            String currentTime = getString(R.string.time,60-duration++);
+                            timeLeft.setText(currentTime);
+                            if(duration>=60){
+                                timer.cancel();
+                            }
+                        }
+                    });
+                }
+            }, 1000, 1000);
             newQ.onClick(v);
+        }
+    };
+
+    View.OnClickListener end = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            long time = System.currentTimeMillis();
+            String endString = String.format("Final Score: %s\n\nTop 5 scores:\n", score);
+            String saveString = "";
+            leaderboard.add(new Entry(playerName, score, time));
+            int i = 0;
+            for(Entry e: leaderboard){
+                endString = endString + (i+1) + ". " + e.toString() + "\n";
+                saveString = saveString + e.toFullString() + "\n";
+                i++;
+                if(i==5) break;
+            }
         }
     };
 
@@ -67,23 +102,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             if(currIdx >= questions.length){
-                long time = System.currentTimeMillis();
-                String endString = String.format("Final Score: %s\n\nTop 5 scores:\n", score);
-                String saveString = "";
-                leaderboard.add(new Entry(playerName, score, time));
-                int i = 0;
-                for(Entry e: leaderboard){
-                    endString = endString + (i+1) + ". " + e.toString() + "\n";
-                    saveString = saveString + e.toFullString() + "\n";
-                    i++;
-                    if(i==5) break;
-                }
-                /*editor.putString(getString(R.string.high_scores_key), saveString);
-                editor.commit();*/
-                text1.setText("Game over!");
-                scorebox.setText(endString);
-                button1.setText("Play again?");
-                button1.setOnClickListener(reset);
+                end.onClick(v);
             }else {
                 entry1.setEnabled(true);
                 text1.setText(String.format("Question %s (%s points):\n%s", currIdx + 1, pointVals[currIdx], questions[currIdx]));
@@ -120,26 +139,31 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        sharedPref = getSharedPreferences(getString(R.string.high_scores_key), Context.MODE_PRIVATE);
+        editor = sharedPref.edit();
 
 
-        /*String high_scores = sharedPref.getString(getString(R.string.high_scores_key), "");
+
+        String high_scores = sharedPref.getString(getString(R.string.high_scores_key), "");
 
         String[] split_vals = high_scores.trim().split("\n");
 
         for(String s: split_vals){
+            if(s.equals("")) continue;
             StringTokenizer st = new StringTokenizer(s);
             String name = st.nextToken();
             int score = Integer.parseInt(st.nextToken());
             long time = Long.parseLong(st.nextToken());
             leaderboard.add(new Entry(name, score, time));
-        }*/
+        }
 
         button1 = (Button)findViewById(R.id.clickButton);
         entry1 = (EditText)findViewById(R.id.answer);
         text1 = (TextView)findViewById(R.id.textBox);
         scorebox = (TextView)findViewById(R.id.score);
+        timeLeft = (TextView)findViewById(R.id.timeLeft);
         button1.setText("Start");
-        button1.setOnClickListener(name);
+        button1.setOnClickListener(reset);
 
     }
 
