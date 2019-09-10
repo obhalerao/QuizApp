@@ -14,10 +14,13 @@ import java.util.*;
 
 public class MainActivity extends AppCompatActivity {
     Button button1;
+    Button resetButton;
     EditText entry1;
     TextView text1;
     TextView scorebox;
     TextView timeLeft;
+    TextView rules;
+    TextView points;
 
     String[] questions = new String[]{"What is 1 + 1?",
             "What state is Chicago in?",
@@ -28,11 +31,12 @@ public class MainActivity extends AppCompatActivity {
     TreeSet<Entry> leaderboard = new TreeSet<Entry>(Collections.<Entry>reverseOrder());
     String playerName = "";
     int[] pointVals = new int[]{100,200,300,400,500};
-    int currIdx = 0;
+    int currIdx = -1;
     String currAns = "";
     int score = 0;
     Timer timer = new Timer();
-    int duration = 0;
+    int max_duration = 60;
+    int duration = max_duration;
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -41,9 +45,26 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             score = 0;
-            currIdx = 0;
+            currIdx = -1;
+            duration = max_duration;
+            timer = new Timer();
+            resetButton.setVisibility(View.GONE);
+            rules.setVisibility(View.GONE);
+            timeLeft.setText("\n");
+            points.setText("");
             scorebox.setText(String.format("Score: %s", score));
             name.onClick(v);
+        }
+    };
+
+    View.OnClickListener resetLeaderboard = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            leaderboard.clear();
+            editor.clear();
+            editor.commit();
+            scorebox.setText(String.format("Final Score: %s\n\nTop 5 scores:\n", score));
+            resetButton.setVisibility(View.GONE);
         }
     };
 
@@ -54,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
             entry1.setEnabled(true);
             button1.setText("Submit");
             button1.setOnClickListener(getName);
+
         }
     };
 
@@ -62,15 +84,25 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             playerName = entry1.getText().toString();
             entry1.setText("");
+            timeLeft.setText(getString(R.string.time, duration));
+            points.setText(getString(R.string.points, pointVals[currIdx+1]));
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            String currentTime = getString(R.string.time,60-duration++);
+                            String currentTime = getString(R.string.time,--duration);
                             timeLeft.setText(currentTime);
-                            if(duration>=60){
+                            if(currIdx >= 0) {
+                                String currentPoints = getString(R.string.points, Math.round((double) pointVals[currIdx] * (.6 + .4 * ((double) duration / (double) (max_duration)))));
+                                points.setText(currentPoints);
+                            }
+                            if(duration<=0){
+                                button1.setOnClickListener(end);
+                                button1.setText("End");
+                                text1.setText("Game over! Press 'End' to go to the final screen.");
+                                entry1.setText("");
                                 timer.cancel();
                             }
                         }
@@ -84,6 +116,10 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener end = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            timer.cancel();
+            timeLeft.setText("\n");
+            points.setText("");
+            resetButton.setVisibility(View.VISIBLE);
             long time = System.currentTimeMillis();
             String endString = String.format("Final Score: %s\n\nTop 5 scores:\n", score);
             String saveString = "";
@@ -95,12 +131,19 @@ public class MainActivity extends AppCompatActivity {
                 i++;
                 if(i==5) break;
             }
+            editor.putString(getString(R.string.high_scores_key), saveString);
+            editor.commit();
+            text1.setText("Game over!");
+            scorebox.setText(endString);
+            button1.setText("Play again?");
+            button1.setOnClickListener(reset);
         }
     };
 
     View.OnClickListener newQ = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            currIdx++;
             if(currIdx >= questions.length){
                 end.onClick(v);
             }else {
@@ -115,17 +158,17 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener response = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            currAns = entry1.getText().toString().toLowerCase();
+            currAns = entry1.getText().toString().toLowerCase().trim();
             entry1.setEnabled(false);
             entry1.setText("");
             if (currAns.equals(answers[currIdx].toLowerCase())) {
-                text1.setText(getString(R.string.right));
-                score += pointVals[currIdx];
+                long points = Math.round((double)pointVals[currIdx] * (.6 + .4*((double)duration/(double)(max_duration))));
+                text1.setText(getString(R.string.right, points));
+                score += points;
 
             } else {
                 text1.setText(String.format("%s The correct answer is %s.", getString(R.string.wrong), answers[currIdx]));
             }
-            currIdx++;
             scorebox.setText(String.format("Score: %s", score));
             button1.setText("Continue");
             button1.setOnClickListener(newQ);
@@ -162,8 +205,14 @@ public class MainActivity extends AppCompatActivity {
         text1 = (TextView)findViewById(R.id.textBox);
         scorebox = (TextView)findViewById(R.id.score);
         timeLeft = (TextView)findViewById(R.id.timeLeft);
+        resetButton = (Button)findViewById(R.id.resetLeaderboard);
+        rules = (TextView)findViewById(R.id.rules);
+        points = (TextView)findViewById(R.id.points);
         button1.setText("Start");
         button1.setOnClickListener(reset);
+        resetButton.setOnClickListener(resetLeaderboard);
+
+
 
     }
 

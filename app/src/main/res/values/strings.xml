@@ -3,8 +3,11 @@
     <string name="welcome">Welcome to Quiz App!</string>
     <string name="start">Let\'s get started!</string>
     <string name="click_button">Submit</string>
-    <string name="right">Correct!</string>
+    <string name="right">Correct! You earned %d points.</string>
     <string name="wrong">Incorrect!</string>
     <string name="high_scores_key">com.trap1.quizapp.sharedprefs</string>
-    <string name="time">Time Left: %d</string>
+    <string name="time">Time Left: %d\n</string>
+    <string name="points">Points for This Question: %d</string>
+    <string name="reset">Reset Leaderboard</string>
+    <string name="rules">You will be given 5 questions and 60 seconds to answer them. The questions have an initial point value of 100 to 500 points, but the longer you take to answer them, the fewer points you will get.</string>
 </resources>
