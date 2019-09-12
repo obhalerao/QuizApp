@@ -119,6 +119,13 @@ public class MainActivity extends AppCompatActivity {
             timer.cancel();
             timeLeft.setText("\n");
             points.setText("");
+            if(leaderboard.size() == 0 || score >= leaderboard.first().getScore()) {
+                Context context = getApplicationContext();
+                String text = "New High Score!";
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
+            }
             resetButton.setVisibility(View.VISIBLE);
             long time = System.currentTimeMillis();
             String endString = String.format("Final Score: %s\n\nTop 5 scores:\n", score);
