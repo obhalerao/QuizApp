@@ -1,9 +1,11 @@
 package trap1.bhaleraoomkar.quizapp;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.widget.Button;
 import android.view.View;
@@ -17,29 +19,39 @@ public class MainActivity extends AppCompatActivity {
     Button resetButton;
     EditText entry1;
     TextView text1;
+    TextView hello;
     TextView scorebox;
     TextView timeLeft;
     TextView rules;
     TextView points;
+    ConstraintLayout layout;
 
     String[] questions = new String[]{"What is 1 + 1?",
             "What state is Chicago in?",
             "What year did the Civil War end?",
             "How many protons are in an an atom of mercury?",
-            "What was Juliet's last name in Shakespeare's 'Romeo and Juliet?'"};
-    String[] answers = new String[]{"2","Illinois","1865","80","Capulet"};
+            "What was Juliet's last name in Shakespeare's 'Romeo and Juliet?'",
+            "What is the decimal representation of 1110110?",
+            "What section of Article I of the U.S. Constitution describes the purpose of the federal government?",
+            "Positive feedback loops occur when there are a __ number of negative connectors.",
+            "The authors of now-ubiquitous writing style guide were __ and White.",
+            "The best Mobile teacher at TJ is Mr. __"
+    };
+    String[] answers = new String[]{"2","Illinois","1865","80","Capulet","118","8","Even","Strunk", "Tra"};
     TreeSet<Entry> leaderboard = new TreeSet<Entry>(Collections.<Entry>reverseOrder());
     String playerName = "";
-    int[] pointVals = new int[]{100,200,300,400,500};
+    int[] pointVals = new int[]{100,200,300,400,500,1000,1750,3750,7000,11500};
     int currIdx = -1;
     String currAns = "";
     int score = 0;
     Timer timer = new Timer();
-    int max_duration = 60;
+    int max_duration = 9100;
     int duration = max_duration;
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
+
+
 
     View.OnClickListener reset = new View.OnClickListener() {
         @Override
@@ -71,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener name = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            hello.setVisibility(View.INVISIBLE);
             text1.setText("Please enter your name.");
             entry1.setEnabled(true);
             button1.setText("Submit");
@@ -84,31 +97,8 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             playerName = entry1.getText().toString();
             entry1.setText("");
-            timeLeft.setText(getString(R.string.time, duration));
+            timeLeft.setText(getString(R.string.time, duration/100));
             points.setText(getString(R.string.points, pointVals[currIdx+1]));
-            timer.scheduleAtFixedRate(new TimerTask() {
-                @Override
-                public void run() {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            String currentTime = getString(R.string.time,--duration);
-                            timeLeft.setText(currentTime);
-                            if(currIdx >= 0) {
-                                String currentPoints = getString(R.string.points, Math.round((double) pointVals[currIdx] * (.6 + .4 * ((double) duration / (double) (max_duration)))));
-                                points.setText(currentPoints);
-                            }
-                            if(duration<=0){
-                                button1.setOnClickListener(end);
-                                button1.setText("End");
-                                text1.setText("Game over! Press 'End' to go to the final screen.");
-                                entry1.setText("");
-                                timer.cancel();
-                            }
-                        }
-                    });
-                }
-            }, 1000, 1000);
             newQ.onClick(v);
         }
     };
@@ -116,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener end = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            timer.cancel();
+            layout.setBackgroundColor(Color.WHITE);
             timeLeft.setText("\n");
             points.setText("");
             if(leaderboard.size() == 0 || score >= leaderboard.first().getScore()) {
@@ -134,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
             int i = 0;
             for(Entry e: leaderboard){
                 endString = endString + (i+1) + ". " + e.toString() + "\n";
-                saveString = saveString + e.toFullString() + "\n";
+                saveString = saveString + "a" + e.toFullString() + "\n";
                 i++;
                 if(i==5) break;
             }
@@ -150,7 +140,35 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener newQ = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            layout.setBackgroundColor(Color.WHITE);
             currIdx++;
+            timer = new Timer();
+            timer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(currIdx >= questions.length){
+                                timer.cancel();
+                            }
+                            else if(currIdx >= 0) {
+                                String currentTime = getString(R.string.time,--duration/100);
+                                timeLeft.setText(currentTime);
+                                String currentPoints = getString(R.string.points, Math.round((double) pointVals[currIdx] * (.6 + .4 * ((double) duration / (double) (max_duration)))));
+                                points.setText(currentPoints);
+                            }
+                            if(duration<=0){
+                                button1.setOnClickListener(end);
+                                button1.setText("End");
+                                text1.setText("Game over! Press 'End' to go to the final screen.");
+                                entry1.setText("");
+                                timer.cancel();
+                            }
+                        }
+                    });
+                }
+            }, 0, 10);
             if(currIdx >= questions.length){
                 end.onClick(v);
             }else {
@@ -165,15 +183,20 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener response = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            timer.cancel();
+            timer.purge();
+
             currAns = entry1.getText().toString().toLowerCase().trim();
             entry1.setEnabled(false);
             entry1.setText("");
             if (currAns.equals(answers[currIdx].toLowerCase())) {
+                layout.setBackgroundColor(Color.GREEN);
                 long points = Math.round((double)pointVals[currIdx] * (.6 + .4*((double)duration/(double)(max_duration))));
                 text1.setText(getString(R.string.right, points));
                 score += points;
 
             } else {
+                layout.setBackgroundColor(Color.RED);
                 text1.setText(String.format("%s The correct answer is %s.", getString(R.string.wrong), answers[currIdx]));
             }
             scorebox.setText(String.format("Score: %s", score));
@@ -201,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
         for(String s: split_vals){
             if(s.equals("")) continue;
             StringTokenizer st = new StringTokenizer(s);
-            String name = st.nextToken();
+            String name = st.nextToken().substring(1);
             int score = Integer.parseInt(st.nextToken());
             long time = Long.parseLong(st.nextToken());
             leaderboard.add(new Entry(name, score, time));
@@ -215,6 +238,8 @@ public class MainActivity extends AppCompatActivity {
         resetButton = (Button)findViewById(R.id.resetLeaderboard);
         rules = (TextView)findViewById(R.id.rules);
         points = (TextView)findViewById(R.id.points);
+        layout = (ConstraintLayout)findViewById(R.id.layout);
+        hello = (TextView)findViewById(R.id.hello);
         button1.setText("Start");
         button1.setOnClickListener(reset);
         resetButton.setOnClickListener(resetLeaderboard);
