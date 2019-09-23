@@ -3,11 +3,18 @@
     <string name="welcome">Welcome to the General Knowledge Test!</string>
     <string name="start">Let\'s get started!</string>
     <string name="click_button">Submit</string>
+    <string name="click_button_start">Start</string>
+    <string name="click_button_continue">Continue</string>
     <string name="right">Correct! You earned %d points.</string>
+    <string name="name_enter">Please enter your name.</string>
     <string name="wrong">Incorrect!</string>
     <string name="high_scores_key">com.trap1.quizapp.sharedprefs</string>
     <string name="time">Time Left: %d\n</string>
     <string name="points">Points for This Question: %d</string>
+    <string name="game_over">Game over!</string>
+    <string name="play_again">Play again?</string>
     <string name="reset">Reset Leaderboard</string>
+    <string name="end">End</string>
+    <string name="final_screen">Game over! Press \'End\' to go to the final screen.</string>
     <string name="rules">You will be given 10 questions and 90 seconds to answer them. The questions have an initial point value of 100 to 11500 points, but the longer you take to answer them, the fewer points you will get.</string>
 </resources>

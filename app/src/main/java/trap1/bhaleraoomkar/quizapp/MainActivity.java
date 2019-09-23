@@ -84,9 +84,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             hello.setVisibility(View.INVISIBLE);
-            text1.setText("Please enter your name.");
+            text1.setText(getString(R.string.name_enter));
+            entry1.setVisibility(View.VISIBLE);
             entry1.setEnabled(true);
-            button1.setText("Submit");
+            button1.setText(getString(R.string.click_button));
             button1.setOnClickListener(getName);
 
         }
@@ -109,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
             layout.setBackgroundColor(Color.WHITE);
             timeLeft.setText("\n");
             points.setText("");
+            entry1.setVisibility(View.GONE);
             if(leaderboard.size() == 0 || score >= leaderboard.first().getScore()) {
                 Context context = getApplicationContext();
                 String text = "New High Score!";
@@ -130,9 +132,9 @@ public class MainActivity extends AppCompatActivity {
             }
             editor.putString(getString(R.string.high_scores_key), saveString);
             editor.commit();
-            text1.setText("Game over!");
+            text1.setText(getString(R.string.game_over));
             scorebox.setText(endString);
-            button1.setText("Play again?");
+            button1.setText(getString(R.string.play_again));
             button1.setOnClickListener(reset);
         }
     };
@@ -142,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             layout.setBackgroundColor(Color.WHITE);
             currIdx++;
+            entry1.setVisibility(View.VISIBLE);
             timer = new Timer();
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
@@ -160,8 +163,8 @@ public class MainActivity extends AppCompatActivity {
                             }
                             if(duration<=0){
                                 button1.setOnClickListener(end);
-                                button1.setText("End");
-                                text1.setText("Game over! Press 'End' to go to the final screen.");
+                                button1.setText(getString(R.string.end));
+                                text1.setText(getString(R.string.final_screen));
                                 entry1.setText("");
                                 timer.cancel();
                             }
@@ -174,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
             }else {
                 entry1.setEnabled(true);
                 text1.setText(String.format("Question %s (%s points):\n%s", currIdx + 1, pointVals[currIdx], questions[currIdx]));
-                button1.setText("Submit");
+                button1.setText(getString(R.string.click_button));
                 button1.setOnClickListener(response);
             }
         }
@@ -187,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
             timer.purge();
 
             currAns = entry1.getText().toString().toLowerCase().trim();
+            entry1.setVisibility(View.GONE);
             entry1.setEnabled(false);
             entry1.setText("");
             if (currAns.equals(answers[currIdx].toLowerCase())) {
@@ -200,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
                 text1.setText(String.format("%s The correct answer is %s.", getString(R.string.wrong), answers[currIdx]));
             }
             scorebox.setText(String.format("Score: %s", score));
-            button1.setText("Continue");
+            button1.setText(getString(R.string.click_button_continue));
             button1.setOnClickListener(newQ);
         }
     };
@@ -240,7 +244,6 @@ public class MainActivity extends AppCompatActivity {
         points = (TextView)findViewById(R.id.points);
         layout = (ConstraintLayout)findViewById(R.id.layout);
         hello = (TextView)findViewById(R.id.hello);
-        button1.setText("Start");
         button1.setOnClickListener(reset);
         resetButton.setOnClickListener(resetLeaderboard);
 
